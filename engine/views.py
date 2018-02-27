@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.views.decorators.http import require_POST
-
+import geocoder
 from .models import City
 from weather import Weather, Unit
 
@@ -21,10 +21,20 @@ class CityListView(generic.ListView):
             context['last_city'] = last_city
             context['last_weather'] = get_current_weather(last_city)
             context['forecasts'] = get_future_weather(last_city)
+
         return context
 
     def get_queryset(self):
         return City.objects.order_by('-pk')
+
+
+@require_POST
+def location_weather(request):
+    latitude = request.POST.get('latitude', '')
+    longitude = request.POST.get('longitude', '')
+    g = geocoder.google([latitude, longitude], method='reverse')
+    weather = get_current_weather(g.city)
+    return render(request, "engine/location_weather.html", {"city": g.city, 'weather': weather})
 
 
 def get_current_weather(city):

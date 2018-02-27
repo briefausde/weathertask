@@ -55,6 +55,18 @@
             {% include "engine/city_list.html" %}
         </ul>
     </div>
+    <div class="mini-player">
+        <div class="track_info_wrapper">
+            <div class="track_info" id="miniplayer">
+                <div class="info" id="location_weather">
+
+                </div>
+            </div>
+        </div>
+        <div class="mini-player_btn_wrapper"><i class="btn-prev fa fa-step-backward" aria-hidden="true"></i>
+            <div class="btn-switch"><i class="btn-play fa fa-play" aria-hidden="true"></i><i class="btn-pause fa fa-pause" aria-hidden="true"></i></div><i class="btn-next fa fa-step-forward" aria-hidden="true"></i><i class="btn-open-player fa fa-list" aria-hidden="true"></i>
+        </div>
+    </div>
     <div class="dim"></div>
 </div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
@@ -62,6 +74,23 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TimelineMax.min.js'></script>
 <script src="{% static "engine/js/index.js" %}"></script>
 <script>
+    navigator.geolocation.getCurrentPosition(function(location) {
+      $.ajax({
+                url: "{% url 'location_weather' %}",
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude
+                },
+                success: function(html){
+                    $("#location_weather").html(html);
+                    var city = $('#location_weather_city').attr('data');
+                    $('#current_city').html(city + " (your location)");
+                }
+            });
+        });
+
     $(document).ready(function(){
         $("#search").submit(function(event){
           event.preventDefault();
