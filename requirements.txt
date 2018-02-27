@@ -1,2 +1,2 @@
 django==1.11.0
-requests
+weather-api

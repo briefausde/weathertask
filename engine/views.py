@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from .models import City
-# from weather import Weather, Unit
+from weather import Weather, Unit
 
 
-API_KEY = "94884ca874fb222e46084a95c6703bb8307dba79"
+weather = Weather(unit=Unit.CELSIUS)
 
 
 class CityListView(generic.ListView):
@@ -15,8 +15,9 @@ class CityListView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(CityListView, self).get_context_data()
         last_city = City.objects.last()
-        context['last_city'] = last_city if last_city else None
-        get_weather_for_city("moscow,RU")
+        if last_city:
+            context['last_city'] = last_city
+            context['last_weather'] = get_weather_for_city(last_city)
         return context
 
     def get_queryset(self):
@@ -24,7 +25,6 @@ class CityListView(generic.ListView):
 
 
 def get_weather_for_city(city):
-    weather = Weather(unit=Unit.CELSIUS)
-    lookup = weather.lookup(560743)
-    condition = lookup.condition()
-    print(condition.text())
+    location = weather.lookup_by_location(city)
+    condition = location.condition()
+    return condition.temp()

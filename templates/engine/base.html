@@ -6,7 +6,7 @@
 {#    <link rel="stylesheet" href="{% static "engine/css/style.css" %}">#}
 </head>
 <body>
-Текущий город: {{ last_city }}
+Текущий город: {{ last_city }} ({{ last_weather }})
 Список всех городов:
 {% for city in cities %}
 <br>{{ city.name }}
