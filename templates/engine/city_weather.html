@@ -1,0 +1,4 @@
+Now in {{ city }} is {{ temp }} C and {{ text }}<br><br><br><br><br>
+{% for forecast in forecasts %}
+    {{ forecast.date }} will be {{ forecast.text }} (high {{ forecast.high }} C, low {{ forecast.low }} C)<br>
+{% endfor %}

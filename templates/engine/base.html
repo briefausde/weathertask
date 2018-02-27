@@ -15,7 +15,7 @@
 				city: city
             },
             success: function(html){
-                $("#").prepend(html);
+                $("#text").html(html);
             }
         });
     }
@@ -35,7 +35,11 @@
 <body>
 <div class="wrapper">
   <div class="text-wrap">
-    <div class="text">Now in {{ last_city }} is {{ last_weather }} C</div>
+    <div class="text" id="text">Now in {{ last_city }} is {{ last_weather.temp }} C and {{ last_weather.text }}<br><br><br><br><br>
+      {% for forecast in forecasts %}
+          {{ forecast.date }} will be {{ forecast.text }} (high {{ forecast.high }} C, low {{ forecast.low }} C)<br>
+      {% endfor %}
+    </div>
   </div>
   <div class="header">
       <div class="burger-wrapper">
@@ -44,15 +48,12 @@
       <div class="logo-text">Cities</div>
   </div>
     <div class="nav">
-        <ul class="nav_main">
+        <ul class="nav_main" id="nav_main">
         <form method="POST" class="search-form" id="search" style="width:100%">{% csrf_token %}
-            <input class="js-searchInput textInput textInput--jumbo textInput--underlined u-marginBottom40" type="search" id="searchText" placeholder="SEARCH A CITY" value="{{ search_text }}" maxlength="300" style="text-align: center;font-size: 2rem;padding-bottom: -100px; color:#111">
+            <input class="js-searchInput textInput textInput--jumbo textInput--underlined u-marginBottom40" type="search" id="searchText" placeholder="ENTER CITY" maxlength="300" style="text-align: center;font-size: 2rem;padding-bottom: -100px; color:#111">
         </form>
-            {% for city in cities %}
-                <li> <a class="nav_link" href="">{{ city }}</a><div style="float:right;margin-right:5%;margin-top:25px">X</div></li>
-            {% endfor %}
+            {% include "engine/city_list.html" %}
         </ul>
-        <div class="nav_divider"></div>
     </div>
     <div class="dim"></div>
 </div>
@@ -60,5 +61,14 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenMax.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TimelineMax.min.js'></script>
 <script src="{% static "engine/js/index.js" %}"></script>
+<script>
+    $(document).ready(function(){
+        $("#search").submit(function(event){
+          event.preventDefault();
+          var searchText = document.getElementById('searchText').value;
+          AjaxGetCity(searchText);
+        });
+    });
+</script>
 </body>
 </html>
