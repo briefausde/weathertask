@@ -2,85 +2,82 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from .models import City
-from weather import Weather, Unit
-import geocoder
+from weather import Weather, Unit  # библиотека для определения погоды
+import geocoder  # библиотека от google для определения города по координатам
 
 
-# рефакторинг
-# комментарии
+weather = Weather(unit=Unit.CELSIUS)  # устанавливаем измерение погоду в цельсиях в библиотеке weather
 
 
-weather = Weather(unit=Unit.CELSIUS)
-
-
+# функция получения текущей погоды
 def get_current_weather(city):
     try:
-        location = weather.lookup_by_location(city)
-        condition = location.condition()
-        return condition
+        # возвращаем текущую погоду для города city из библиотеки weather. Если город не существует, возвращаем None
+        return weather.lookup_by_location(city).condition()
     except:
         return None
 
 
+# функция получения прогноза погоды
 def get_future_weather(city):
     try:
-        location = weather.lookup_by_location(city)
-        forecasts = location.forecast()
-        return forecasts[0:5]
+        # возвращаем прогноз на 5 дней для города city из библиотеки weather. Если город не существует, возвращаем None
+        return weather.lookup_by_location(city).forecast()[0:5]
     except:
         return None
 
 
+# listview городов из базы и view главной страницы
 class CityListView(generic.ListView):
-    model = City
-    context_object_name = 'cities'
+    model = City  # модель города
+    context_object_name = 'cities'  # название массива с городами в шаблоне
     template_name = "engine/base.html"
 
-    def get_context_data(self, **kwargs):
-        context = super(CityListView, self).get_context_data()
-        return context
-
     def get_queryset(self):
-        return City.objects.order_by('-pk')
+        return City.objects.order_by('-pk')  # выводим города по убыванию ключа
 
 
+# view погоды по локации пользователя
 class LocationWeatherView(generic.View):
     template_name = "engine/location_weather.html"
 
     def get(self, request):
-        latitude = request.GET.get('latitude', '')
-        longitude = request.GET.get('longitude', '')
-        city = None
+        latitude = request.GET.get('latitude', '')    # получаем широту
+        longitude = request.GET.get('longitude', '')    # получаем долготу
+        city = None  # название города из котого наш пользователь
         while city is None:
-            g = geocoder.google([latitude, longitude], method='reverse')
-            city = g.city
-        current = get_current_weather(city)
-        future = get_future_weather(city)
+            g = geocoder.google([latitude, longitude], method='reverse')  # по координатам вычесляем город
+            city = g.city  # город пользователя. Иногда может быть None, поэтому делаем в цикле, пока не определим норм
+        current = get_current_weather(city)  # текущая погода в городе пользователя
+        future = get_future_weather(city)  # прогноз погоды для города пользователя
         return render(request, self.template_name, {"city": city, 'current': current, 'forecasts': future})
 
 
+# view добавления города в базу
 class AddCityView(generic.View):
     def get(self, request):
-        city = request.GET.get('city', '').lower()
-        if get_current_weather(city):
-            if not City.objects.filter(name=city):
-                new_city = City.objects.create(name=city)
-                return HttpResponse(new_city.pk)
+        city = request.GET.get('city', '').lower()  # получаем из url название города и делаем текст в нижнем регистре
+        if get_current_weather(city):  # проверка или существует прогноз для города city, если нет - return "None"
+            if not City.objects.filter(name=city):  # проверяем или нет города city в нашей базе
+                new_city = City.objects.create(name=city)  # если нет, то добавляем в базу
+                return HttpResponse(new_city.pk)  # возвращаем pk только что созданного в базе города
         return HttpResponse("None")
 
 
+# view погоды для города с базы
 class GetCityView(generic.View):
     template_name = "engine/city_weather.html"
 
     def get(self, request):
-        city = request.GET.get('city', '')
-        current = get_current_weather(city)
-        future = get_future_weather(city)
+        city = request.GET.get('city', '')  # достаем из url название города
+        current = get_current_weather(city)  # получаем текущую погоду для города
+        future = get_future_weather(city)  # получаем ближайшую погоду для города
         return render(request, self.template_name, {'city': city, 'current': current, 'forecasts': future})
 
 
-def remove_city(request):  # функция удаления города из базы
-    pk = int(request.GET.get("pk", 0))  # получаем id города
+# функция удаления города из базы
+def remove_city(request):
+    pk = int(request.GET.get("pk", 0))  # достаем из url ключ города в базе
     song = get_object_or_404(City, pk=pk)  # достаем объект "город" с базы
     song.delete()  # удаляем город
     return redirect("/")
