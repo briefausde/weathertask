@@ -3,12 +3,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
     <link rel="stylesheet" href="{% static "engine/css/style.css" %}">
 </head>
 <script type="text/javascript">
+    var my_city = "";
     function AjaxGetCity(city){
         $.ajax({
-            url: "{% url 'get_temp_for_current_city' %}",
+            url: "{% url 'get_city' %}",
             type: 'POST',
             data: {
                 csrfmiddlewaretoken: '{{ csrf_token }}',
@@ -16,6 +18,21 @@
             },
             success: function(html){
                 $("#text").html(html);
+            }
+        });
+    }
+    function AjaxAddCity(city){
+        $.ajax({
+            url: "{% url 'add_city' %}",
+            type: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+				city: city
+            },
+            success: function(html){
+                if (html != "None") {
+                    $("#cities").prepend(' <li> <a class="nav_link" href="#" onclick="AjaxGetCity(\''+ city + '\');return false">' + city + '</a><div style="float:right;margin-right:5%;margin-top:25px" onclick="result = confirm(\'Do you want delete this city?\');if(result == true){AjaxRemoveCity(' + html + ');$(this).parent().remove();}">X</div></li>');
+                }
             }
         });
     }
@@ -35,11 +52,7 @@
 <body>
 <div class="wrapper">
   <div class="text-wrap">
-    <div class="text" id="text">Now in {{ last_city }} is {{ last_weather.temp }} C and {{ last_weather.text }}<br><br><br><br><br>
-      {% for forecast in forecasts %}
-          {{ forecast.date }} will be {{ forecast.text }} (high {{ forecast.high }} C, low {{ forecast.low }} C)<br>
-      {% endfor %}
-    </div>
+    <div class="text" id="text">Loading...</div>
   </div>
   <div class="header">
       <div class="burger-wrapper">
@@ -54,18 +67,6 @@
         </form>
             {% include "engine/city_list.html" %}
         </ul>
-    </div>
-    <div class="mini-player">
-        <div class="track_info_wrapper">
-            <div class="track_info" id="miniplayer">
-                <div class="info" id="location_weather">
-
-                </div>
-            </div>
-        </div>
-        <div class="mini-player_btn_wrapper"><i class="btn-prev fa fa-step-backward" aria-hidden="true"></i>
-            <div class="btn-switch"><i class="btn-play fa fa-play" aria-hidden="true"></i><i class="btn-pause fa fa-pause" aria-hidden="true"></i></div><i class="btn-next fa fa-step-forward" aria-hidden="true"></i><i class="btn-open-player fa fa-list" aria-hidden="true"></i>
-        </div>
     </div>
     <div class="dim"></div>
 </div>
@@ -84,9 +85,10 @@
                     longitude: location.coords.longitude
                 },
                 success: function(html){
-                    $("#location_weather").html(html);
+                    $("#text").html(html);
                     var city = $('#location_weather_city').attr('data');
-                    $('#current_city').html(city + " (your location)");
+                    my_city = city;
+                    $('#current_city').html('<i class="fa fa-map-marker" aria-hidden="true"></i>   ' + city);
                 }
             });
         });
@@ -95,7 +97,7 @@
         $("#search").submit(function(event){
           event.preventDefault();
           var searchText = document.getElementById('searchText').value;
-          AjaxGetCity(searchText);
+          AjaxAddCity(searchText);
         });
     });
 </script>

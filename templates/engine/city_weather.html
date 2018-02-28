@@ -1,4 +1,10 @@
-Now in {{ city }} is {{ temp }} C and {{ text }}<br><br><br><br><br>
-{% for forecast in forecasts %}
-    {{ forecast.date }} will be {{ forecast.text }} (high {{ forecast.high }} C, low {{ forecast.low }} C)<br>
-{% endfor %}
+<center>
+    <div class="city-name">{{ city }}</div>
+    <div class="city-temp">{{ current.temp }}&#8451; and Cloudy</div>
+    <br><br><br><br><br>
+    <div class="forecasts">
+        {% for forecast in forecasts %}
+            {{ forecast.date }} {{ forecast.text }} ({{ forecast.high }}&#8451;, {{ forecast.low }}&#8451;)<br>
+        {% endfor %}
+    </div>
+</center>
