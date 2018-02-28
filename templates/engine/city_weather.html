@@ -1,10 +1,10 @@
-<center>
+<center style="margin-top:150px">
     <div class="city-name">{{ city }}</div>
     <div class="city-temp">{{ current.temp }}&#8451; and Cloudy</div>
-    <br><br><br>
+
     <div class="forecasts">
         {% for forecast in forecasts %}
-            {{ forecast.date }} {{ forecast.text }} ({{ forecast.high }}&#8451;, {{ forecast.low }}&#8451;)<br>
+            <div class="forecast">{{ forecast.date }} {{ forecast.text }} ({{ forecast.high }}&#8451;, {{ forecast.low }}&#8451;)</div><br>
         {% endfor %}
     </div>
 </center>
