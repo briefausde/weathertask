@@ -5,7 +5,7 @@ from engine import views
 urlpatterns = [
     url(r'^$', views.CityListView.as_view(), name='main'),
     url(r'^remove_city/$', views.remove_city, name='remove_city'),
-    url(r'^add_city/$', views.add_city, name='add_city'),
-    url(r'^get_city/$', views.get_city, name='get_city'),
-    url(r'^location_weather/$', views.location_weather, name='location_weather')
+    url(r'^add_city/$', views.AddCityView.as_view(), name='add_city'),
+    url(r'^get_city/$', views.GetCityView.as_view(), name='get_city'),
+    url(r'^location_weather/$', views.LocationWeatherView.as_view(), name='location_weather')
 ]

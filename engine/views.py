@@ -1,17 +1,12 @@
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
-from django.views.decorators.http import require_POST
-import geocoder
 from .models import City
 from weather import Weather, Unit
+import geocoder
 
 
-# при добавлении нового города обновлять список get_cities_list
-# при нажатии на Город (your location) открывать погоду города
-# сделать красиво на главной странице
 # рефакторинг
-# classbaseview
 # комментарии
 
 
@@ -49,43 +44,43 @@ class CityListView(generic.ListView):
         return City.objects.order_by('-pk')
 
 
-@require_POST
-def location_weather(request):
-    latitude = request.POST.get('latitude', '')
-    longitude = request.POST.get('longitude', '')
-    city = None
-    while city is None:
-        g = geocoder.google([latitude, longitude], method='reverse')
-        city = g.city
-    current = get_current_weather(city)
-    future = get_future_weather(city)
-    return render(request, "engine/location_weather.html", {"city": city, 'current': current, 'forecasts': future})
+class LocationWeatherView(generic.View):
+    template_name = "engine/location_weather.html"
+
+    def get(self, request):
+        latitude = request.GET.get('latitude', '')
+        longitude = request.GET.get('longitude', '')
+        city = None
+        while city is None:
+            g = geocoder.google([latitude, longitude], method='reverse')
+            city = g.city
+        current = get_current_weather(city)
+        future = get_future_weather(city)
+        return render(request, self.template_name, {"city": city, 'current': current, 'forecasts': future})
 
 
-
-@require_POST
-def add_city(request):
-    city = request.POST.get('city', '')
-    if get_current_weather(city):
-        try:
-            get_current_weather(city)
-            city = City.objects.create(name=city)
-            return HttpResponse(city.pk)
-        except:
-            None
-    return HttpResponse("None")
+class AddCityView(generic.View):
+    def get(self, request):
+        city = request.GET.get('city', '').lower()
+        if get_current_weather(city):
+            if not City.objects.filter(name=city):
+                new_city = City.objects.create(name=city)
+                return HttpResponse(new_city.pk)
+        return HttpResponse("None")
 
 
-@require_POST
-def get_city(request):
-    city = request.POST.get('city', '')
-    current = get_current_weather(city)
-    future = get_future_weather(city)
-    return render(request, "engine/city_weather.html", {'city': city, 'current': current, 'forecasts': future})
+class GetCityView(generic.View):
+    template_name = "engine/city_weather.html"
+
+    def get(self, request):
+        city = request.GET.get('city', '')
+        current = get_current_weather(city)
+        future = get_future_weather(city)
+        return render(request, self.template_name, {'city': city, 'current': current, 'forecasts': future})
 
 
-def remove_city(request):
-    pk = int(request.GET.get("pk", 0))
-    song = get_object_or_404(City, pk=pk)
-    song.delete()
+def remove_city(request):  # функция удаления города из базы
+    pk = int(request.GET.get("pk", 0))  # получаем id города
+    song = get_object_or_404(City, pk=pk)  # достаем объект "город" с базы
+    song.delete()  # удаляем город
     return redirect("/")
