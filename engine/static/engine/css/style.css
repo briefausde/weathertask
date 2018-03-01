@@ -181,7 +181,11 @@ body {
   z-index: 2;
   opacity: 0;
 }
-
+.content {
+  color: #444444;
+  margin-top:150px;
+  text-align: center;
+}
 .city-name {
   font-size: 48px;
   text-transform: uppercase;
