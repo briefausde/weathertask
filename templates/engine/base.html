@@ -59,7 +59,9 @@
         {# делаем ajax запрос на remove_city для удаления города с ключем pk #}
         $.ajax({
             url: "{% url 'remove_city' %}",
+            type: 'POST',
             data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
 				pk: pk
             }
         });

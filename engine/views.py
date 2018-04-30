@@ -13,8 +13,9 @@ weather = Weather(unit=Unit.CELSIUS)  # устанавливаем измере�
 def get_current_weather(city):
     try:
         # возвращаем текущую погоду для города city из библиотеки weather. Если город не существует, возвращаем None
-        return weather.lookup_by_location(city).condition()
-    except:
+        return weather.lookup_by_location(city).condition  # condition in some cases should be callable (.condition())
+    except Exception as e:
+        print(e)
         return None
 
 
@@ -22,8 +23,9 @@ def get_current_weather(city):
 def get_future_weather(city):
     try:
         # возвращаем прогноз на 5 дней для города city из библиотеки weather. Если город не существует, возвращаем None
-        return weather.lookup_by_location(city).forecast()[0:5]
-    except:
+        return weather.lookup_by_location(city).forecast[0:5]  # forecast in some cases should be callable (.forecast())
+    except Exception as e:
+        print(e)
         return None
 
 
@@ -75,9 +77,11 @@ class GetCityView(generic.View):
         return render(request, self.template_name, {'city': city, 'current': current, 'forecasts': future})
 
 
-# функция удаления города из базы
-def remove_city(request):
-    pk = int(request.GET.get("pk", 0))  # достаем из url ключ города в базе
-    song = get_object_or_404(City, pk=pk)  # достаем объект "город" с базы
-    song.delete()  # удаляем город
-    return redirect("/")
+# view удаления города из базы
+class CityDeleteView(generic.DeleteView):
+    model = City
+    success_url = '/'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(City, pk=self.request.POST.get("pk"))
+
