@@ -13,7 +13,7 @@ weather = Weather(unit=Unit.CELSIUS)  # устанавливаем измере�
 def get_current_weather(city):
     try:
         # возвращаем текущую погоду для города city из библиотеки weather. Если город не существует, возвращаем None
-        return weather.lookup_by_location(city).condition  # condition in some cases should be callable (.condition())
+        return weather.lookup_by_location(city).condition  # condition in some cases is callable (.condition())
     except Exception as e:
         print(e)
         return None
@@ -23,7 +23,7 @@ def get_current_weather(city):
 def get_future_weather(city):
     try:
         # возвращаем прогноз на 5 дней для города city из библиотеки weather. Если город не существует, возвращаем None
-        return weather.lookup_by_location(city).forecast[0:5]  # forecast in some cases should be callable (.forecast())
+        return weather.lookup_by_location(city).forecast[0:5]  # forecast in some cases is callable (.forecast())
     except Exception as e:
         print(e)
         return None
